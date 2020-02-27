@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Data;
 
 namespace School
 {
@@ -21,5 +22,25 @@ namespace School
         }
 
         #endregion
+    }
+
+    [ValueConversion(typeof(string), typeof(DateTime))]
+    class DateConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (DateTime.TryParse(value.ToString(), out DateTime dateTime))
+                return dateTime.ToString("dd/MM/yyyy");
+            else
+                return string.Empty;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter,System.Globalization.CultureInfo culture)
+        {
+            if (DateTime.TryParse(value.ToString(), out DateTime dateTime))
+                return dateTime;
+            else
+                return new DateTime();
+        }
     }
 }

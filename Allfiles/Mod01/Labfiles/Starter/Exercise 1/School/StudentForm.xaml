@@ -1,6 +1,7 @@
 ﻿<Window x:Class="School.StudentForm"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="School"
         Title="StudentForm" Height="225" Width="515" ResizeMode="NoResize">
     <Grid>
         <Label Height="23" Margin="17,20,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="108">First Name</Label>

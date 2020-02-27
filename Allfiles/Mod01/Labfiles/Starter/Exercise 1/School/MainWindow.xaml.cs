@@ -58,11 +58,100 @@ namespace School
         private void studentsList_KeyDown(object sender, KeyEventArgs e)
         {
             // TODO: Exercise 1: Task 1a: If the user pressed Enter, edit the details for the currently selected student
+            switch (e.Key)
+            {
+                case Key.Enter:
+                    EditCurrentStudent();
+                    break;
+                case Key.Insert:
+                    InsertNewStudent();
+                    break;
+                case Key.Delete:
+                    DeleteCurrentStudent();
+                    break;
+                default:
+                    break;
+            }
             // TODO: Exercise 1: Task 2a: Use the StudentsForm to display and edit the details of the student
             // TODO: Exercise 1: Task 2b: Set the title of the form and populate the fields on the form with the details of the student
             // TODO: Exercise 1: Task 3a: Display the form
             // TODO: Exercise 1: Task 3b: When the user closes the form, copy the details back to the student
             // TODO: Exercise 1: Task 3c: Enable saving (changes are not made permanent until they are written back to the database)
+        }
+
+        private void DeleteCurrentStudent()
+        {
+            Student selectedStudent = (studentsList.SelectedItem as Student);
+            if (selectedStudent == null)
+            {
+                return;
+            }
+
+            ConfirmDeleteOfStudent(selectedStudent);
+        }
+
+        private void ConfirmDeleteOfStudent(Student student)
+        {
+            string message = $"Confirm delete of {student.FirstName} {student.LastName}?";
+            if (MessageBox.Show(message, "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                this.teacher.Students.Remove(student);
+            }
+        }
+
+        private void InsertNewStudent()
+        {
+            Student newStudent = new Student();
+            ConfigureAndShowNewStudentForm(newStudent);
+        }
+
+        private void ConfigureAndShowNewStudentForm(Student student)
+        {
+            StudentForm frmStudent = new StudentForm();
+            frmStudent.Title = $"New Student for Class {teacher.Class}";
+
+            if (frmStudent.ShowDialog().GetValueOrDefault())
+            {
+                CopyData(student, frmStudent);
+                saveChanges.IsEnabled = true;
+                this.teacher.Students.Add(student);
+            }
+        }
+
+        private void EditCurrentStudent()
+        {
+            Student selectedStudent = (studentsList.SelectedItem as Student);
+            if(selectedStudent == null)
+            {
+                return;
+            }
+
+            ConfigureAndShowStudentForm(selectedStudent);
+        }
+
+        private void ConfigureAndShowStudentForm(Student student)
+        {
+            StudentForm frmStudent = new StudentForm();
+            frmStudent.Title = $"Editing {student.FirstName} {student.LastName}";
+            frmStudent.firstName.Text = student.FirstName;
+            frmStudent.lastName.Text = student.LastName;
+            frmStudent.dateOfBirth.Text = student.DateOfBirth.ToShortDateString();
+
+            if(frmStudent.ShowDialog().GetValueOrDefault())
+            {
+                CopyData(student, frmStudent);
+                saveChanges.IsEnabled = true;
+            }
+        }
+
+        private void CopyData(Student student, StudentForm frmStudent)
+        {
+            student.FirstName = frmStudent.firstName.Text;
+            student.LastName = frmStudent.lastName.Text;
+            if(DateTime.TryParse(frmStudent.dateOfBirth.Text, out DateTime dateTime))
+            {
+                student.DateOfBirth = dateTime;
+            }
         }
 
         #region Predefined code
@@ -84,16 +173,28 @@ namespace School
     [ValueConversion(typeof(string), typeof(Decimal))]
     class AgeConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter,
-                              System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return "";
+            if(value == null)
+            {
+                return string.Empty;
+            }
+
+            if(DateTime.TryParse(value.ToString(), out DateTime dateTime))
+            {
+                TimeSpan ts = DateTime.Now.Subtract(dateTime);
+                int years = (int)(ts.Days / 365.25);
+                return years.ToString();
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         #region Predefined code
 
-        public object ConvertBack(object value, Type targetType, object parameter,
-                                  System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             throw new NotImplementedException();
         }
